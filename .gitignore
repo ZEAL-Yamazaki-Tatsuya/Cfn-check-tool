@@ -1,0 +1,19 @@
+# Git管理対象外のファイル・ディレクトリ
+# 管理対象は以下の3つのみ:
+# - InventoryDiff.ps1
+# - InventorySnapshot.ps1  
+# - readme
+
+# すべてのファイルを除外
+*
+
+# 管理したいファイルのみを明示的に追加
+!InventoryDiff.ps1
+!InventorySnapshot.ps1
+!readme
+!readme.md
+!README
+!README.md
+
+# .gitignoreファイル自体も管理対象に含める
+!.gitignore

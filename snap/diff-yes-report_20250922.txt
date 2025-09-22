@@ -1,29 +1,47 @@
 ﻿=== vpcs.json ===
   Changed : vpc-09980eac10ddfac75
+    vpc-09980eac10ddfac75 details:
+    CidrBlock: '172.31.32.0/20' -> '172.31.32.0/19'
 
 === subnets.json ===
   Changed : subnet-01d7e4b4f4ee336eb
+    subnet-01d7e4b4f4ee336eb details:
+    State: '' -> 'available'
 
 === route_tables.json ===
   Changed : rtb-05586fde7cf07461e
+    rtb-05586fde7cf07461e details:
+    Associations: [ARRAY CONTENT CHANGED]
 
 === internet_gateways.json ===
   Changed : igw-0c7668ae0f9993cbf
+    igw-0c7668ae0f9993cbf details:
+    Tags: [ARRAY CONTENT CHANGED]
 
 === dhcp_options.json ===
   Changed : dopt-e0585887
+    dopt-e0585887 details:
+    DhcpConfigurations: [ARRAY CONTENT CHANGED]
 
 === elastic_ips.json ===
   Changed : eipalloc-07fb31d299b831d07
+    eipalloc-07fb31d299b831d07 details:
+    PublicIp: '18.176.22.55' -> '18.176.22.40'
 
 === managed_prefix_lists.json ===
   Changed : pl-0e9bca5093b8dd7b8, pl-088f6a61
+    pl-0e9bca5093b8dd7b8 details:
+    State: 'create-complet' -> 'create-complete'
+    pl-088f6a61 details:
+    AddressFamily: 'IPv6' -> 'IPv4'
 
 === managed_prefix_list_entries.json ===
   No differences
 
 === nat_gateways.json ===
   Changed : nat-079ea61b236a45c72
+    nat-079ea61b236a45c72 details:
+    Tags: [ARRAY CONTENT CHANGED]
 
 === vpc_peering_connections.json ===
   Added   : pcx-05ed2da07314329b2
@@ -31,18 +49,27 @@
 
 === network_acls.json ===
   Changed : acl-0b1a09591390ed411
+    acl-0b1a09591390ed411 details:
+    Associations: [ARRAY CONTENT CHANGED]
 
 === security_groups.json ===
   Changed : sg-041f0e7c632c7e90c
+    sg-041f0e7c632c7e90c details:
+    Tags.Value: 'test-eccms-efc-redis' -> 'test-eccms-ec-redis'
 
 === vpc_endpoints.json ===
   Changed : vpce-0778997da117f7759
+    vpce-0778997da117f7759 details:
 
 === vpc_endpoint_service_configurations.json ===
   Changed : vpce-svc-008ec27ac80934a59
+    vpce-svc-008ec27ac80934a59 details:
+    AvailabilityZones: [ARRAY CONTENT CHANGED]
 
 === vpc_endpoint_service_permissions.json ===
   Changed : vpce-svc-008ec27ac80934a59
+    vpce-svc-008ec27ac80934a59 details:
+    AllowedPrincipals: [ARRAY CONTENT CHANGED]
 
 === vpc_lattice_services.json ===
   No differences
@@ -55,4 +82,6 @@
 
 === vpn_gateways.json ===
   Changed : vgw-00f20b0c18ac0af02
+    vgw-00f20b0c18ac0af02 details:
+    VpcAttachments.State: 'attachaaed' -> 'attached'
 

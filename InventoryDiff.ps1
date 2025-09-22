@@ -67,6 +67,72 @@ function As-Array { param($x)
   return @($x)
 }
 
+# ---------- 詳細差分比較 ----------
+function Compare-ObjectDetails {
+  param([object]$before, [object]$after, [string]$path = '')
+  
+  function Compare-Properties([object]$b, [object]$a, [string]$currentPath) {
+    $diffs = @()
+    
+    if ($null -eq $b -and $null -eq $a) { return $diffs }
+    if ($null -eq $b) { 
+      $diffs += "    ${currentPath}: [ADDED] $a"
+      return $diffs 
+    }
+    if ($null -eq $a) { 
+      $diffs += "    ${currentPath}: [REMOVED] $b"
+      return $diffs 
+    }
+    
+    # PSCustomObject の場合
+    if ($b -is [pscustomobject] -and $a -is [pscustomobject]) {
+      $bProps = $b.PSObject.Properties.Name | Sort-Object
+      $aProps = $a.PSObject.Properties.Name | Sort-Object
+      $allProps = ($bProps + $aProps) | Sort-Object -Unique
+      
+      foreach ($prop in $allProps) {
+        $newPath = if ($currentPath) { "$currentPath.$prop" } else { $prop }
+        $bVal = if ($prop -in $bProps) { $b.$prop } else { $null }
+        $aVal = if ($prop -in $aProps) { $a.$prop } else { $null }
+        $diffs += Compare-Properties $bVal $aVal $newPath
+      }
+      return $diffs
+    }
+    
+    # 配列の場合（簡略化：サイズ変更のみ検知）
+    if ($b -is [System.Collections.IEnumerable] -and -not ($b -is [string]) -and
+        $a -is [System.Collections.IEnumerable] -and -not ($a -is [string])) {
+      $bArray = @($b)
+      $aArray = @($a)
+      
+      if ($bArray.Count -ne $aArray.Count) {
+        $diffs += "    ${currentPath}: [ARRAY SIZE] $($bArray.Count) -> $($aArray.Count)"
+      } elseif ($bArray.Count -gt 0) {
+        # 配列の内容が変更された場合の簡易表示
+        try {
+          $bJson = ($bArray | ConvertTo-Json -Compress -Depth 2)
+          $aJson = ($aArray | ConvertTo-Json -Compress -Depth 2)
+          if ($bJson -ne $aJson) {
+            $diffs += "    ${currentPath}: [ARRAY CONTENT CHANGED]"
+          }
+        } catch {
+          $diffs += "    ${currentPath}: [ARRAY CONTENT CHANGED - COMPARISON ERROR]"
+        }
+      }
+      return $diffs
+    }
+    
+    # スカラー値の比較
+    if ($b -ne $a) {
+      $diffs += "    ${currentPath}: '$b' -> '$a'"
+    }
+    
+    return $diffs
+  }
+  
+  return Compare-Properties $before $after $path
+}
+
 # Route正規化のキー
 function Rt-RouteKey($r) {
   $dst = $r.DestinationCidrBlock
@@ -82,6 +148,7 @@ function Rt-RouteKey($r) {
   if (-not $t) { $t = $r.CarrierGatewayId }
   return "$dst|$t"
 }
+
 function Rt-AssocKey($a) {
   if ($a.Main -eq $true) { return "MAIN" }
   if ($a.SubnetId) { return "SUBNET:$($a.SubnetId)" }
@@ -103,7 +170,7 @@ function To-CanonicalJson {
         $val = $o.$p
 
         # route_tables.json: Routes/Associations を順序無視でキーソート
-        if ($currentFile -match 'route_tables\.json$') {
+        if ($currentFile -match 'route_tables\.json') {
           if ($p -eq 'Routes' -and $val) {
             $arr = @(As-Array $val | Sort-Object { Rt-RouteKey $_ })
             $ht[$p] = @( $arr | ForEach-Object { Normalize $_ "$path.$p" } )
@@ -142,7 +209,6 @@ function To-CanonicalJson {
   $norm = Normalize $obj
   return ($norm | ConvertTo-Json -Depth 100 -Compress)
 }
-
 # ---------- アイテム読み込み（route_tables の重複統合を含む） ----------
 function Load-Items {
   param([string]$path, [string]$containerPath, [string]$idKey)
@@ -238,16 +304,28 @@ foreach ($f in $files) {
   $common  = $beforeIds | Where-Object { $_ -in $afterIds }
 
   $changed = @()
+  $changedDetails = @{}
   foreach ($id in $common) {
     $b = To-CanonicalJson -obj $before[$id] -currentFile $f
     $a = To-CanonicalJson -obj $after[$id]  -currentFile $f
-    if ($b -ne $a) { $changed += $id }
+    if ($b -ne $a) { 
+      $changed += $id 
+      $changedDetails[$id] = Compare-ObjectDetails -before $before[$id] -after $after[$id]
+    }
   }
 
   $report.Add("=== $f ===")
   if ($added)   { $report.Add("  Added   : " + ($added -join ', ')) }
   if ($removed) { $report.Add("  Removed : " + ($removed -join ', ')) }
-  if ($changed) { $report.Add("  Changed : " + ($changed -join ', ')) }
+  if ($changed) { 
+    $report.Add("  Changed : " + ($changed -join ', '))
+    foreach ($id in $changed) {
+      $report.Add("    $id details:")
+      foreach ($detail in $changedDetails[$id]) {
+        $report.Add($detail)
+      }
+    }
+  }
   if (-not $added -and -not $removed -and -not $changed) { $report.Add("  No differences") }
   $report.Add("")
 }
