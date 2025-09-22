@@ -1,0 +1,57 @@
+﻿=== vpcs.json ===
+  No differences
+
+=== subnets.json ===
+  No differences
+
+=== route_tables.json ===
+  No differences
+
+=== internet_gateways.json ===
+  No differences
+
+=== dhcp_options.json ===
+  No differences
+
+=== elastic_ips.json ===
+  No differences
+
+=== managed_prefix_lists.json ===
+  No differences
+
+=== managed_prefix_list_entries.json ===
+  No differences
+
+=== nat_gateways.json ===
+  No differences
+
+=== vpc_peering_connections.json ===
+  No differences
+
+=== network_acls.json ===
+  No differences
+
+=== security_groups.json ===
+  No differences
+
+=== vpc_endpoints.json ===
+  No differences
+
+=== vpc_endpoint_service_configurations.json ===
+  No differences
+
+=== vpc_endpoint_service_permissions.json ===
+  No differences
+
+=== vpc_lattice_services.json ===
+  No differences
+
+=== vpc_lattice_service_networks.json ===
+  No differences
+
+=== vpc_lattice_service_network_vpc_associations.json ===
+  No differences
+
+=== vpn_gateways.json ===
+  No differences
+

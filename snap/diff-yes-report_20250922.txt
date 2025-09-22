@@ -1,0 +1,58 @@
+﻿=== vpcs.json ===
+  Changed : vpc-09980eac10ddfac75
+
+=== subnets.json ===
+  Changed : subnet-01d7e4b4f4ee336eb
+
+=== route_tables.json ===
+  Changed : rtb-05586fde7cf07461e
+
+=== internet_gateways.json ===
+  Changed : igw-0c7668ae0f9993cbf
+
+=== dhcp_options.json ===
+  Changed : dopt-e0585887
+
+=== elastic_ips.json ===
+  Changed : eipalloc-07fb31d299b831d07
+
+=== managed_prefix_lists.json ===
+  Changed : pl-0e9bca5093b8dd7b8, pl-088f6a61
+
+=== managed_prefix_list_entries.json ===
+  No differences
+
+=== nat_gateways.json ===
+  Changed : nat-079ea61b236a45c72
+
+=== vpc_peering_connections.json ===
+  Added   : pcx-05ed2da07314329b2
+  Removed : pcx-05eda07314329b2
+
+=== network_acls.json ===
+  Changed : acl-0b1a09591390ed411
+
+=== security_groups.json ===
+  Changed : sg-041f0e7c632c7e90c
+
+=== vpc_endpoints.json ===
+  Changed : vpce-0778997da117f7759
+
+=== vpc_endpoint_service_configurations.json ===
+  Changed : vpce-svc-008ec27ac80934a59
+
+=== vpc_endpoint_service_permissions.json ===
+  Changed : vpce-svc-008ec27ac80934a59
+
+=== vpc_lattice_services.json ===
+  No differences
+
+=== vpc_lattice_service_networks.json ===
+  No differences
+
+=== vpc_lattice_service_network_vpc_associations.json ===
+  No differences
+
+=== vpn_gateways.json ===
+  Changed : vgw-00f20b0c18ac0af02
+

@@ -1,0 +1,22 @@
+1.事前にsession tokenを取得して、取得結果を3つの環境変数にsetしておく
+　・aws sts get-session-token --profile xxx --serial-number arn:aws:iam::xxxx:mfa/xxxx --token-code 123456
+  ・$env:AWS_ACCESS_KEY_ID='xxxx'
+  ・$env:AWS_SECRET_ACCESS_KEY='xxxx'
+  ・$env:AWS_SESSION_TOKEN='xxxx'
+
+2.Cfn実行前に、下記コマンドを実行して実行前の各種情報を取得する
+　・.\Inventory.ps1 -OutDir .\snap -Label <label名>
+    ・OutDir: 取得した情報の保存先ディレクトリ
+    ・Label: OutDir配下にこのラベル名のディレクトリが作成され、その中に情報が保存される
+
+
+3.Cfn実行後に、下記コマンドを実行して実行前の各種情報を取得する
+　・.\Inventory.ps1 -OutDir .\snap -Label <label名>
+    ・OutDir: 取得した情報の保存先ディレクトリ
+    ・Label: OutDir配下にこのラベル名のディレクトリが作成され、その中に情報が保存される
+
+4.取得した情報を比較する
+　・InventoryDiff.ps1 -BeforeDir .\snap\<label名1> -AfterDir .\snap\<label名2> -OutReport .\snap\<report名>.txt
+    ・BeforeDir: Cfn実行前に取得した情報が保存されているディレクトリ
+    ・AfterDir: Cfn実行後に取得した情報が保存されているディレクトリ
+    ・OutReport: 差分レポートの保存先ファイル名

@@ -1,0 +1,48 @@
+﻿[
+    {
+        "ServiceId":  "vpce-svc-008ec27ac80934a59",
+        "AllowedPrincipals":  [
+                                  {
+                                      "PrincipalType":  "Account",
+                                      "Principal":  "arn:aws:iam::339712754019:root",
+                                      "ServicePermissionId":  "vpce-svc-perm-005812e545144d0ae",
+                                      "Tags":  [
+
+                                               ],
+                                      "ServiceId":  "vpce-svc-008ec27ac80934a59"
+                                  },
+                                  {
+                                      "PrincipalType":  "Account",
+                                      "Principal":  "arn:aws:iam::545668264778:root",
+                                      "ServicePermissionId":  "vpce-svc-perm-0e9f64bbaf682d10d",
+                                      "Tags":  [
+
+                                               ],
+                                      "ServiceId":  "vpce-svc-008ec27ac80934a59"
+                                  }
+                              ]
+    },
+    {
+        "ServiceId":  "vpce-svc-07bbb09e8d80c9bea",
+        "AllowedPrincipals":  [
+                                  {
+                                      "PrincipalType":  "Account",
+                                      "Principal":  "arn:aws:iam::339712754019:root",
+                                      "ServicePermissionId":  "vpce-svc-perm-02de5a326be841f4b",
+                                      "Tags":  [
+
+                                               ],
+                                      "ServiceId":  "vpce-svc-07bbb09e8d80c9bea"
+                                  },
+                                  {
+                                      "PrincipalType":  "Account",
+                                      "Principal":  "arn:aws:iam::545668264778:root",
+                                      "ServicePermissionId":  "vpce-svc-perm-0c68ab19c1f6dc899",
+                                      "Tags":  [
+
+                                               ],
+                                      "ServiceId":  "vpce-svc-07bbb09e8d80c9bea"
+                                  }
+                              ]
+    }
+]

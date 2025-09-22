@@ -1,0 +1,101 @@
+﻿{
+    "InternetGateways":  [
+                             {
+                                 "Attachments":  [
+                                                     {
+                                                         "State":  "available",
+                                                         "VpcId":  "vpc-0211221e48658e889"
+                                                     }
+                                                 ],
+                                 "InternetGatewayId":  "igw-0067e4c6d61bf7844",
+                                 "OwnerId":  "051827334866",
+                                 "Tags":  [
+                                              {
+                                                  "Key":  "aws:cloudformation:stack-id",
+                                                  "Value":  "arn:aws:cloudformation:ap-northeast-1:051827334866:stack/PoC-VPC/dec8de40-231a-11eb-98f4-06f8be6690ec"
+                                              },
+                                              {
+                                                  "Key":  "aws:cloudformation:stack-name",
+                                                  "Value":  "PoC-VPC"
+                                              },
+                                              {
+                                                  "Key":  "aws:cloudformation:logical-id",
+                                                  "Value":  "IgwPocJeol"
+                                              },
+                                              {
+                                                  "Key":  "Name",
+                                                  "Value":  "igw-poc-jeol"
+                                              }
+                                          ]
+                             },
+                             {
+                                 "Attachments":  [
+                                                     {
+                                                         "State":  "available",
+                                                         "VpcId":  "vpc-0b7a45ddcc2d63cdc"
+                                                     }
+                                                 ],
+                                 "InternetGatewayId":  "igw-0c7668ae0f9993cbf",
+                                 "OwnerId":  "051827334866",
+                                 "Tags":  [
+                                              {
+                                                  "Key":  "Name",
+                                                  "Value":  "igw-production-jeol"
+                                              },
+                                              {
+                                                  "Key":  "aws:cloudformation:logical-id",
+                                                  "Value":  "IgwProductionJeol"
+                                              },
+                                              {
+                                                  "Key":  "aws:cloudformation:stack-id",
+                                                  "Value":  "arn:aws:cloudformation:ap-northeast-1:051827334866:stack/production-jeol-vpc/b87cb4b0-32d7-11eb-ab3a-0a326cc6f6b0"
+                                              },
+                                              {
+                                                  "Key":  "aws:cloudformation:stack-name",
+                                                  "Value":  "production-jeol-vpc"
+                                              }
+                                          ]
+                             },
+                             {
+                                 "Attachments":  [
+                                                     {
+                                                         "State":  "available",
+                                                         "VpcId":  "vpc-09980eac10ddfac75"
+                                                     }
+                                                 ],
+                                 "InternetGatewayId":  "igw-0edce8839d53ebfee",
+                                 "OwnerId":  "051827334866",
+                                 "Tags":  [
+                                              {
+                                                  "Key":  "aws:cloudformation:stack-id",
+                                                  "Value":  "arn:aws:cloudformation:ap-northeast-1:051827334866:stack/test-jeol-vpc/5a14e100-32d6-11eb-a72d-06f8be6690ec"
+                                              },
+                                              {
+                                                  "Key":  "aws:cloudformation:logical-id",
+                                                  "Value":  "IgwTestJeol"
+                                              },
+                                              {
+                                                  "Key":  "Name",
+                                                  "Value":  "igw-test-jeol"
+                                              },
+                                              {
+                                                  "Key":  "aws:cloudformation:stack-name",
+                                                  "Value":  "test-jeol-vpc"
+                                              }
+                                          ]
+                             },
+                             {
+                                 "Attachments":  [
+                                                     {
+                                                         "State":  "available",
+                                                         "VpcId":  "vpc-83a9b2e4"
+                                                     }
+                                                 ],
+                                 "InternetGatewayId":  "igw-5a21c73d",
+                                 "OwnerId":  "051827334866",
+                                 "Tags":  [
+
+                                          ]
+                             }
+                         ]
+}
