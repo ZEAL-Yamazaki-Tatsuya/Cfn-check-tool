@@ -24,7 +24,20 @@ $files = @(
   'vpc_lattice_services.json',
   'vpc_lattice_service_networks.json',
   'vpc_lattice_service_network_vpc_associations.json',
-  'vpn_gateways.json'
+  'vpn_gateways.json',
+  'ec2_instances.json',
+  'ec2_key_pairs.json',
+  'ec2_images.json',
+  'ec2_volumes.json',
+  'ec2_snapshots.json',
+  'ecs_clusters.json',
+  'ecs_services.json',
+  'ecs_task_definitions.json',
+  'load_balancers.json',
+  'target_groups.json',
+  'load_balancer_listeners.json',
+  'target_health.json',
+  'classic_load_balancers.json'
 )
 
 # リソースIDの抽出ロジック
@@ -48,6 +61,19 @@ $idSelectors = @{
   'vpc_lattice_service_networks.json'                 = @{ Path='Items'; Id='Id' }
   'vpc_lattice_service_network_vpc_associations.json' = @{ Path=''; Id='ServiceNetworkId' }
   'vpn_gateways.json'                                 = @{ Path='VpnGateways'; Id='VpnGatewayId' }
+  'ec2_instances.json'                                = @{ Path='Reservations'; Id='InstanceId' }
+  'ec2_key_pairs.json'                                = @{ Path='KeyPairs'; Id='KeyName' }
+  'ec2_images.json'                                   = @{ Path='Images'; Id='ImageId' }
+  'ec2_volumes.json'                                  = @{ Path='Volumes'; Id='VolumeId' }
+  'ec2_snapshots.json'                                = @{ Path='Snapshots'; Id='SnapshotId' }
+  'ecs_clusters.json'                                 = @{ Path='clusters'; Id='clusterArn' }
+  'ecs_services.json'                                 = @{ Path=''; Id='serviceArn' }
+  'ecs_task_definitions.json'                         = @{ Path=''; Id='taskDefinitionArn' }
+  'load_balancers.json'                               = @{ Path='LoadBalancers'; Id='LoadBalancerArn' }
+  'target_groups.json'                                = @{ Path='TargetGroups'; Id='TargetGroupArn' }
+  'load_balancer_listeners.json'                      = @{ Path=''; Id='ListenerArn' }
+  'target_health.json'                                = @{ Path=''; Id='TargetGroupArn' }
+  'classic_load_balancers.json'                       = @{ Path='LoadBalancerDescriptions'; Id='LoadBalancerName' }
 }
 
 # ---------- ユーティリティ ----------
@@ -244,7 +270,7 @@ function Load-Items {
     return $merged
   }
 
-  # vpc_endpoint_service_permissions.json / managed_prefix_list_entries.json / lattice SN-VPC associations の特例
+  # 特殊な構造のファイルの処理
   if ($path.ToLower().EndsWith('vpc_endpoint_service_permissions.json')) {
     $map = @{}
     foreach ($svc in (As-Array $items)) {
@@ -268,6 +294,52 @@ function Load-Items {
         $id = $x.AssociationId
         if ($id) { $map[$id] = $x }
       }
+    }
+    return $map
+  }
+  
+  # EC2インスタンスの特殊処理（Reservations -> Instances）
+  if ($path.ToLower().EndsWith('ec2_instances.json')) {
+    $map = @{}
+    foreach ($reservation in (As-Array $items)) {
+      foreach ($instance in (As-Array $reservation.Instances)) {
+        $id = $instance.InstanceId
+        if ($id) { $map[$id] = $instance }
+      }
+    }
+    return $map
+  }
+  
+  # ECS Services の特殊処理
+  if ($path.ToLower().EndsWith('ecs_services.json')) {
+    $map = @{}
+    foreach ($svcWrapper in (As-Array $items)) {
+      $svc = $svcWrapper.Service
+      if ($svc -and $svc.serviceArn) {
+        $map[$svc.serviceArn] = $svcWrapper
+      }
+    }
+    return $map
+  }
+  
+  # Load Balancer Listeners の特殊処理
+  if ($path.ToLower().EndsWith('load_balancer_listeners.json')) {
+    $map = @{}
+    foreach ($listenerWrapper in (As-Array $items)) {
+      $listener = $listenerWrapper.Listener
+      if ($listener -and $listener.ListenerArn) {
+        $map[$listener.ListenerArn] = $listenerWrapper
+      }
+    }
+    return $map
+  }
+  
+  # Target Health の特殊処理
+  if ($path.ToLower().EndsWith('target_health.json')) {
+    $map = @{}
+    foreach ($healthWrapper in (As-Array $items)) {
+      $id = $healthWrapper.TargetGroupArn
+      if ($id) { $map[$id] = $healthWrapper }
     }
     return $map
   }

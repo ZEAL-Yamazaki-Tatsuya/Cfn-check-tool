@@ -108,4 +108,117 @@ $snVpcAssocAll | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'vpc_la
 $resp = Run-AwsJson "aws ec2 describe-vpn-gateways --output json"
 $resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'vpn_gateways.json') -Encoding utf8
 
+# EC2 Instances
+$resp = Run-AwsJson "aws ec2 describe-instances --output json"
+$resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'ec2_instances.json') -Encoding utf8
+
+# EC2 Key Pairs
+$resp = Run-AwsJson "aws ec2 describe-key-pairs --output json"
+$resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'ec2_key_pairs.json') -Encoding utf8
+
+# EC2 Images (AMIs) - 自分が所有するもののみ
+$resp = Run-AwsJson "aws ec2 describe-images --owners self --output json"
+$resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'ec2_images.json') -Encoding utf8
+
+# EC2 Volumes
+$resp = Run-AwsJson "aws ec2 describe-volumes --output json"
+$resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'ec2_volumes.json') -Encoding utf8
+
+# EC2 Snapshots - 自分が所有するもののみ
+$resp = Run-AwsJson "aws ec2 describe-snapshots --owner-ids self --output json"
+$resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'ec2_snapshots.json') -Encoding utf8
+
+# ECS Clusters
+$resp = Run-AwsJson "aws ecs list-clusters --output json"
+if ($resp -and $resp.clusterArns) {
+  $clusterDetails = Run-AwsJson "aws ecs describe-clusters --clusters $($resp.clusterArns -join ' ') --include CONFIGURATIONS,TAGS --output json"
+  $clusterDetails | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'ecs_clusters.json') -Encoding utf8
+  
+  # ECS Services for each cluster
+  $allServices = @()
+  foreach ($clusterArn in $resp.clusterArns) {
+    $services = Run-AwsJson "aws ecs list-services --cluster $clusterArn --output json"
+    if ($services -and $services.serviceArns) {
+      $serviceDetails = Run-AwsJson "aws ecs describe-services --cluster $clusterArn --services $($services.serviceArns -join ' ') --output json"
+      if ($serviceDetails -and $serviceDetails.services) {
+        foreach ($service in $serviceDetails.services) {
+          $allServices += [pscustomobject]@{
+            ClusterArn = $clusterArn
+            Service = $service
+          }
+        }
+      }
+    }
+  }
+  $allServices | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'ecs_services.json') -Encoding utf8
+  
+  # ECS Task Definitions
+  $taskDefs = Run-AwsJson "aws ecs list-task-definitions --output json"
+  if ($taskDefs -and $taskDefs.taskDefinitionArns) {
+    # 最新のリビジョンのみを取得（最大50個）
+    $latestTaskDefs = $taskDefs.taskDefinitionArns | Select-Object -Last 50
+    $taskDefDetails = @()
+    foreach ($taskDefArn in $latestTaskDefs) {
+      $taskDef = Run-AwsJson "aws ecs describe-task-definition --task-definition $taskDefArn --output json"
+      if ($taskDef) { $taskDefDetails += $taskDef.taskDefinition }
+    }
+    $taskDefDetails | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'ecs_task_definitions.json') -Encoding utf8
+  }
+} else {
+  # 空のファイルを作成
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'ecs_clusters.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'ecs_services.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'ecs_task_definitions.json') -Encoding utf8
+}
+
+# Application Load Balancers (ALB)
+$resp = Run-AwsJson "aws elbv2 describe-load-balancers --output json"
+if ($resp -and $resp.LoadBalancers) {
+  $resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'load_balancers.json') -Encoding utf8
+  
+  # Target Groups
+  $targetGroups = Run-AwsJson "aws elbv2 describe-target-groups --output json"
+  $targetGroups | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'target_groups.json') -Encoding utf8
+  
+  # Listeners for each load balancer
+  $allListeners = @()
+  foreach ($lb in $resp.LoadBalancers) {
+    $listeners = Run-AwsJson "aws elbv2 describe-listeners --load-balancer-arn $($lb.LoadBalancerArn) --output json"
+    if ($listeners -and $listeners.Listeners) {
+      foreach ($listener in $listeners.Listeners) {
+        $allListeners += [pscustomobject]@{
+          LoadBalancerArn = $lb.LoadBalancerArn
+          Listener = $listener
+        }
+      }
+    }
+  }
+  $allListeners | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'load_balancer_listeners.json') -Encoding utf8
+  
+  # Target Health for each target group
+  $allTargetHealth = @()
+  if ($targetGroups -and $targetGroups.TargetGroups) {
+    foreach ($tg in $targetGroups.TargetGroups) {
+      $health = Run-AwsJson "aws elbv2 describe-target-health --target-group-arn $($tg.TargetGroupArn) --output json"
+      if ($health) {
+        $allTargetHealth += [pscustomobject]@{
+          TargetGroupArn = $tg.TargetGroupArn
+          TargetHealthDescriptions = $health.TargetHealthDescriptions
+        }
+      }
+    }
+  }
+  $allTargetHealth | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'target_health.json') -Encoding utf8
+} else {
+  # 空のファイルを作成
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'load_balancers.json') -Encoding utf8
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'target_groups.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'load_balancer_listeners.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'target_health.json') -Encoding utf8
+}
+
+# Classic Load Balancers (CLB) - 旧世代だが念のため
+$resp = Run-AwsJson "aws elb describe-load-balancers --output json"
+$resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'classic_load_balancers.json') -Encoding utf8
+
 Write-Host "Snapshot completed: $target"

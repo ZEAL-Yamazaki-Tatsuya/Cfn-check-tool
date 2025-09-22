@@ -13,11 +13,14 @@ AWS環境のインフラストラクチャ情報を取得し、変更前後の�
 
 以下のAWSリソースの情報を取得・比較できます：
 
-- VPC関連: VPCs, Subnets, Route Tables, Internet Gateways
-- ネットワーク: NAT Gateways, VPC Peering Connections, VPC Endpoints
-- セキュリティ: Security Groups, Network ACLs
-- その他: Elastic IPs, DHCP Options, Managed Prefix Lists, VPN Gateways
-- VPC Lattice: Services, Service Networks, Associations
+- **VPC関連**: VPCs, Subnets, Route Tables, Internet Gateways
+- **ネットワーク**: NAT Gateways, VPC Peering Connections, VPC Endpoints
+- **セキュリティ**: Security Groups, Network ACLs
+- **EC2関連**: EC2 Instances, Key Pairs, AMIs, EBS Volumes, EBS Snapshots
+- **ECS関連**: ECS Clusters, Services, Task Definitions
+- **ロードバランサー**: Application Load Balancers (ALB), Network Load Balancers (NLB), Classic Load Balancers (CLB), Target Groups, Listeners, Target Health
+- **その他**: Elastic IPs, DHCP Options, Managed Prefix Lists, VPN Gateways
+- **VPC Lattice**: Services, Service Networks, Associations
 
 ## 前提条件
 
