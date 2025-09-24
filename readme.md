@@ -19,6 +19,7 @@ AWS環境のインフラストラクチャ情報を取得し、変更前後の�
 - **EC2関連**: EC2 Instances, Key Pairs, AMIs, EBS Volumes, EBS Snapshots
 - **ECS関連**: ECS Clusters, Services, Task Definitions
 - **ロードバランサー**: Application Load Balancers (ALB), Network Load Balancers (NLB), Classic Load Balancers (CLB), Target Groups, Listeners, Target Health
+- **IAM関連**: Users, Groups, Roles, Managed Policies, Instance Profiles, SAML Providers, OIDC Providers
 - **その他**: Elastic IPs, DHCP Options, Managed Prefix Lists, VPN Gateways
 - **VPC Lattice**: Services, Service Networks, Associations
 
@@ -27,6 +28,27 @@ AWS環境のインフラストラクチャ情報を取得し、変更前後の�
 - PowerShell 5.1以上
 - AWS CLI設定済み
 - 適切なAWS権限（各リソースの読み取り権限）
+
+### 必要なIAM権限
+
+以下の権限が必要です：
+
+**EC2・VPC関連**
+- `ec2:Describe*`
+
+**ECS関連**
+- `ecs:List*`
+- `ecs:Describe*`
+
+**ELB関連**
+- `elasticloadbalancing:Describe*`
+
+**IAM関連**
+- `iam:List*`
+- `iam:Get*`
+
+**VPC Lattice関連**
+- `vpc-lattice:List*`
 
 ## セットアップ
 
@@ -106,6 +128,18 @@ CloudFormation、Terraform、または手動でのAWSリソース変更を実行
 === vpc_peering_connections.json ===
   Added   : pcx-05ed2da07314329b2
   Removed : pcx-05eda07314329b2
+
+=== iam_users.json ===
+  Added   : test-user-001
+  Changed : admin-user
+    admin-user details:
+      Tags: [ARRAY SIZE] 1 -> 2
+
+=== iam_role_policies.json ===
+  Added   : MyRole|AttachedManagedPolicies
+  Changed : MyRole|InlinePolicies
+    MyRole|InlinePolicies details:
+      Policies: [ARRAY CONTENT CHANGED]
 ```
 
 ## ディレクトリ構造
