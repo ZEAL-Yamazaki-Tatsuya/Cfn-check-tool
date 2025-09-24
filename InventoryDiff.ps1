@@ -37,7 +37,20 @@ $files = @(
   'target_groups.json',
   'load_balancer_listeners.json',
   'target_health.json',
-  'classic_load_balancers.json'
+  'classic_load_balancers.json',
+  'iam_users.json',
+  'iam_user_policies.json',
+  'iam_groups.json',
+  'iam_group_policies.json',
+  'iam_roles.json',
+  'iam_role_policies.json',
+  'iam_managed_policies.json',
+  'iam_policy_versions.json',
+  'iam_instance_profiles.json',
+  'iam_saml_providers.json',
+  'iam_saml_provider_details.json',
+  'iam_oidc_providers.json',
+  'iam_oidc_provider_details.json'
 )
 
 # リソースIDの抽出ロジック
@@ -74,6 +87,19 @@ $idSelectors = @{
   'load_balancer_listeners.json'                      = @{ Path=''; Id='ListenerArn' }
   'target_health.json'                                = @{ Path=''; Id='TargetGroupArn' }
   'classic_load_balancers.json'                       = @{ Path='LoadBalancerDescriptions'; Id='LoadBalancerName' }
+  'iam_users.json'                                    = @{ Path='Users'; Id='UserName' }
+  'iam_user_policies.json'                            = @{ Path=''; Id='UserName' }
+  'iam_groups.json'                                   = @{ Path='Groups'; Id='GroupName' }
+  'iam_group_policies.json'                           = @{ Path=''; Id='GroupName' }
+  'iam_roles.json'                                    = @{ Path='Roles'; Id='RoleName' }
+  'iam_role_policies.json'                            = @{ Path=''; Id='RoleName' }
+  'iam_managed_policies.json'                         = @{ Path='Policies'; Id='Arn' }
+  'iam_policy_versions.json'                          = @{ Path=''; Id='PolicyArn' }
+  'iam_instance_profiles.json'                        = @{ Path='InstanceProfiles'; Id='InstanceProfileName' }
+  'iam_saml_providers.json'                           = @{ Path='SAMLProviderList'; Id='Arn' }
+  'iam_saml_provider_details.json'                    = @{ Path=''; Id='Arn' }
+  'iam_oidc_providers.json'                           = @{ Path='OpenIDConnectProviderList'; Id='Arn' }
+  'iam_oidc_provider_details.json'                    = @{ Path=''; Id='Arn' }
 }
 
 # ---------- ユーティリティ ----------
@@ -204,6 +230,29 @@ function To-CanonicalJson {
           }
           if ($p -eq 'Associations' -and $val) {
             $arr = @(As-Array $val | Sort-Object { Rt-AssocKey $_ })
+            $ht[$p] = @( $arr | ForEach-Object { Normalize $_ "$path.$p" } )
+            continue
+          }
+        }
+        
+        # IAM policies: ポリシー配列をソート
+        if ($currentFile -match 'iam_.*_policies\.json') {
+          if ($p -eq 'Policies' -and $val) {
+            $arr = @(As-Array $val | Sort-Object { 
+              if ($_.PolicyArn) { return $_.PolicyArn }
+              if ($_.PolicyName) { return $_.PolicyName }
+              return $_.ToString()
+            })
+            $ht[$p] = @( $arr | ForEach-Object { Normalize $_ "$path.$p" } )
+            continue
+          }
+          if ($p -eq 'Groups' -and $val) {
+            $arr = @(As-Array $val | Sort-Object { $_.GroupName })
+            $ht[$p] = @( $arr | ForEach-Object { Normalize $_ "$path.$p" } )
+            continue
+          }
+          if ($p -eq 'InstanceProfiles' -and $val) {
+            $arr = @(As-Array $val | Sort-Object { $_.InstanceProfileName })
             $ht[$p] = @( $arr | ForEach-Object { Normalize $_ "$path.$p" } )
             continue
           }
@@ -340,6 +389,36 @@ function Load-Items {
     foreach ($healthWrapper in (As-Array $items)) {
       $id = $healthWrapper.TargetGroupArn
       if ($id) { $map[$id] = $healthWrapper }
+    }
+    return $map
+  }
+  
+  # IAM User Policies の特殊処理
+  if ($path.ToLower().EndsWith('iam_user_policies.json')) {
+    $map = @{}
+    foreach ($userPolicy in (As-Array $items)) {
+      $key = "$($userPolicy.UserName)|$($userPolicy.Type)"
+      $map[$key] = $userPolicy
+    }
+    return $map
+  }
+  
+  # IAM Group Policies の特殊処理
+  if ($path.ToLower().EndsWith('iam_group_policies.json')) {
+    $map = @{}
+    foreach ($groupPolicy in (As-Array $items)) {
+      $key = "$($groupPolicy.GroupName)|$($groupPolicy.Type)"
+      $map[$key] = $groupPolicy
+    }
+    return $map
+  }
+  
+  # IAM Role Policies の特殊処理
+  if ($path.ToLower().EndsWith('iam_role_policies.json')) {
+    $map = @{}
+    foreach ($rolePolicy in (As-Array $items)) {
+      $key = "$($rolePolicy.RoleName)|$($rolePolicy.Type)"
+      $map[$key] = $rolePolicy
     }
     return $map
   }

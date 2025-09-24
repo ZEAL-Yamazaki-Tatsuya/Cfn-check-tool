@@ -221,4 +221,243 @@ if ($resp -and $resp.LoadBalancers) {
 $resp = Run-AwsJson "aws elb describe-load-balancers --output json"
 $resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'classic_load_balancers.json') -Encoding utf8
 
+# IAM Users
+$resp = Run-AwsJson "aws iam list-users --output json"
+if ($resp -and $resp.Users) {
+  $resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_users.json') -Encoding utf8
+  
+  # User policies for each user
+  $allUserPolicies = @()
+  foreach ($user in $resp.Users) {
+    $userName = $user.UserName
+    
+    # Attached managed policies
+    $attachedPolicies = Run-AwsJson "aws iam list-attached-user-policies --user-name $userName --output json"
+    if ($attachedPolicies) {
+      $allUserPolicies += [pscustomobject]@{
+        UserName = $userName
+        Type = "AttachedManagedPolicies"
+        Policies = $attachedPolicies.AttachedPolicies
+      }
+    }
+    
+    # Inline policies
+    $inlinePolicies = Run-AwsJson "aws iam list-user-policies --user-name $userName --output json"
+    if ($inlinePolicies -and $inlinePolicies.PolicyNames) {
+      $inlinePolicyDetails = @()
+      foreach ($policyName in $inlinePolicies.PolicyNames) {
+        $policyDoc = Run-AwsJson "aws iam get-user-policy --user-name $userName --policy-name $policyName --output json"
+        if ($policyDoc) {
+          $inlinePolicyDetails += $policyDoc
+        }
+      }
+      $allUserPolicies += [pscustomobject]@{
+        UserName = $userName
+        Type = "InlinePolicies"
+        Policies = $inlinePolicyDetails
+      }
+    }
+    
+    # User groups
+    $userGroups = Run-AwsJson "aws iam get-groups-for-user --user-name $userName --output json"
+    if ($userGroups) {
+      $allUserPolicies += [pscustomobject]@{
+        UserName = $userName
+        Type = "Groups"
+        Groups = $userGroups.Groups
+      }
+    }
+  }
+  $allUserPolicies | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_user_policies.json') -Encoding utf8
+} else {
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'iam_users.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'iam_user_policies.json') -Encoding utf8
+}
+
+# IAM Groups
+$resp = Run-AwsJson "aws iam list-groups --output json"
+if ($resp -and $resp.Groups) {
+  $resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_groups.json') -Encoding utf8
+  
+  # Group policies for each group
+  $allGroupPolicies = @()
+  foreach ($group in $resp.Groups) {
+    $groupName = $group.GroupName
+    
+    # Attached managed policies
+    $attachedPolicies = Run-AwsJson "aws iam list-attached-group-policies --group-name $groupName --output json"
+    if ($attachedPolicies) {
+      $allGroupPolicies += [pscustomobject]@{
+        GroupName = $groupName
+        Type = "AttachedManagedPolicies"
+        Policies = $attachedPolicies.AttachedPolicies
+      }
+    }
+    
+    # Inline policies
+    $inlinePolicies = Run-AwsJson "aws iam list-group-policies --group-name $groupName --output json"
+    if ($inlinePolicies -and $inlinePolicies.PolicyNames) {
+      $inlinePolicyDetails = @()
+      foreach ($policyName in $inlinePolicies.PolicyNames) {
+        $policyDoc = Run-AwsJson "aws iam get-group-policy --group-name $groupName --policy-name $policyName --output json"
+        if ($policyDoc) {
+          $inlinePolicyDetails += $policyDoc
+        }
+      }
+      $allGroupPolicies += [pscustomobject]@{
+        GroupName = $groupName
+        Type = "InlinePolicies"
+        Policies = $inlinePolicyDetails
+      }
+    }
+  }
+  $allGroupPolicies | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_group_policies.json') -Encoding utf8
+} else {
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'iam_groups.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'iam_group_policies.json') -Encoding utf8
+}
+
+# IAM Roles
+$resp = Run-AwsJson "aws iam list-roles --output json"
+if ($resp -and $resp.Roles) {
+  $resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_roles.json') -Encoding utf8
+  
+  # Role policies for each role
+  $allRolePolicies = @()
+  foreach ($role in $resp.Roles) {
+    $roleName = $role.RoleName
+    
+    # Attached managed policies
+    $attachedPolicies = Run-AwsJson "aws iam list-attached-role-policies --role-name $roleName --output json"
+    if ($attachedPolicies) {
+      $allRolePolicies += [pscustomobject]@{
+        RoleName = $roleName
+        Type = "AttachedManagedPolicies"
+        Policies = $attachedPolicies.AttachedPolicies
+      }
+    }
+    
+    # Inline policies
+    $inlinePolicies = Run-AwsJson "aws iam list-role-policies --role-name $roleName --output json"
+    if ($inlinePolicies -and $inlinePolicies.PolicyNames) {
+      $inlinePolicyDetails = @()
+      foreach ($policyName in $inlinePolicies.PolicyNames) {
+        $policyDoc = Run-AwsJson "aws iam get-role-policy --role-name $roleName --policy-name $policyName --output json"
+        if ($policyDoc) {
+          $inlinePolicyDetails += $policyDoc
+        }
+      }
+      $allRolePolicies += [pscustomobject]@{
+        RoleName = $roleName
+        Type = "InlinePolicies"
+        Policies = $inlinePolicyDetails
+      }
+    }
+    
+    # Instance profiles
+    $instanceProfiles = Run-AwsJson "aws iam list-instance-profiles-for-role --role-name $roleName --output json"
+    if ($instanceProfiles) {
+      $allRolePolicies += [pscustomobject]@{
+        RoleName = $roleName
+        Type = "InstanceProfiles"
+        InstanceProfiles = $instanceProfiles.InstanceProfiles
+      }
+    }
+  }
+  $allRolePolicies | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_role_policies.json') -Encoding utf8
+} else {
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'iam_roles.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'iam_role_policies.json') -Encoding utf8
+}
+
+# IAM Managed Policies (Customer managed only)
+$resp = Run-AwsJson "aws iam list-policies --scope Local --output json"
+if ($resp -and $resp.Policies) {
+  $resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_managed_policies.json') -Encoding utf8
+  
+  # Policy versions and documents
+  $allPolicyVersions = @()
+  foreach ($policy in $resp.Policies) {
+    $policyArn = $policy.Arn
+    
+    # Get policy versions
+    $versions = Run-AwsJson "aws iam list-policy-versions --policy-arn $policyArn --output json"
+    if ($versions -and $versions.Versions) {
+      foreach ($version in $versions.Versions) {
+        if ($version.IsDefaultVersion -eq $true) {
+          $policyDoc = Run-AwsJson "aws iam get-policy-version --policy-arn $policyArn --version-id $($version.VersionId) --output json"
+          if ($policyDoc) {
+            $allPolicyVersions += [pscustomobject]@{
+              PolicyArn = $policyArn
+              VersionId = $version.VersionId
+              IsDefaultVersion = $version.IsDefaultVersion
+              Document = $policyDoc.PolicyVersion.Document
+              CreateDate = $version.CreateDate
+            }
+          }
+        }
+      }
+    }
+  }
+  $allPolicyVersions | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_policy_versions.json') -Encoding utf8
+} else {
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'iam_managed_policies.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'iam_policy_versions.json') -Encoding utf8
+}
+
+# IAM Instance Profiles
+$resp = Run-AwsJson "aws iam list-instance-profiles --output json"
+$resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_instance_profiles.json') -Encoding utf8
+
+# IAM SAML Providers
+$resp = Run-AwsJson "aws iam list-saml-providers --output json"
+if ($resp -and $resp.SAMLProviderList) {
+  $resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_saml_providers.json') -Encoding utf8
+  
+  # SAML Provider details
+  $samlProviderDetails = @()
+  foreach ($provider in $resp.SAMLProviderList) {
+    $providerArn = $provider.Arn
+    $providerDetail = Run-AwsJson "aws iam get-saml-provider --saml-provider-arn $providerArn --output json"
+    if ($providerDetail) {
+      $samlProviderDetails += [pscustomobject]@{
+        Arn = $providerArn
+        SAMLMetadataDocument = $providerDetail.SAMLMetadataDocument
+        CreateDate = $providerDetail.CreateDate
+        ValidUntil = $providerDetail.ValidUntil
+      }
+    }
+  }
+  $samlProviderDetails | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_saml_provider_details.json') -Encoding utf8
+} else {
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'iam_saml_providers.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'iam_saml_provider_details.json') -Encoding utf8
+}
+
+# IAM OIDC Providers
+$resp = Run-AwsJson "aws iam list-open-id-connect-providers --output json"
+if ($resp -and $resp.OpenIDConnectProviderList) {
+  $resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_oidc_providers.json') -Encoding utf8
+  
+  # OIDC Provider details
+  $oidcProviderDetails = @()
+  foreach ($provider in $resp.OpenIDConnectProviderList) {
+    $providerArn = $provider.Arn
+    $providerDetail = Run-AwsJson "aws iam get-open-id-connect-provider --open-id-connect-provider-arn $providerArn --output json"
+    if ($providerDetail) {
+      $oidcProviderDetails += [pscustomobject]@{
+        Arn = $providerArn
+        Url = $providerDetail.Url
+        ClientIDList = $providerDetail.ClientIDList
+        ThumbprintList = $providerDetail.ThumbprintList
+        CreateDate = $providerDetail.CreateDate
+      }
+    }
+  }
+  $oidcProviderDetails | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'iam_oidc_provider_details.json') -Encoding utf8
+} else {
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'iam_oidc_providers.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'iam_oidc_provider_details.json') -Encoding utf8
+}
+
 Write-Host "Snapshot completed: $target"
