@@ -461,3 +461,25 @@ if ($resp -and $resp.OpenIDConnectProviderList) {
 }
 
 Write-Host "Snapshot completed: $target"
+           CacheParameterGroupName = $cpgName
+            Parameters = $modifiedParams
+          }
+        }
+      }
+    }
+  }
+  $allCacheParameters | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'elasticache_parameter_details.json') -Encoding utf8
+} else {
+  @{} | ConvertTo-Json | Out-File (Join-Path $target 'elasticache_parameter_groups.json') -Encoding utf8
+  @() | ConvertTo-Json | Out-File (Join-Path $target 'elasticache_parameter_details.json') -Encoding utf8
+}
+
+# ElastiCache Security Groups (VPC以外の場合)
+$resp = Run-AwsJson "aws elasticache describe-cache-security-groups --output json"
+$resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'elasticache_security_groups.json') -Encoding utf8
+
+# ElastiCache Snapshots (Redis)
+$resp = Run-AwsJson "aws elasticache describe-snapshots --output json"
+$resp | ConvertTo-Json -Depth 100 | Out-File (Join-Path $target 'elasticache_snapshots.json') -Encoding utf8
+
+Write-Host "Snapshot completed: $target"

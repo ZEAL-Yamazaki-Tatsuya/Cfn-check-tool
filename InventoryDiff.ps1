@@ -50,7 +50,24 @@ $files = @(
   'iam_saml_providers.json',
   'iam_saml_provider_details.json',
   'iam_oidc_providers.json',
-  'iam_oidc_provider_details.json'
+  'iam_oidc_provider_details.json',
+  'rds_db_instances.json',
+  'rds_db_clusters.json',
+  'rds_db_subnet_groups.json',
+  'rds_db_parameter_groups.json',
+  'rds_db_parameter_details.json',
+  'rds_db_cluster_parameter_groups.json',
+  'rds_db_cluster_parameter_details.json',
+  'rds_option_groups.json',
+  'rds_db_snapshots.json',
+  'rds_db_cluster_snapshots.json',
+  'elasticache_clusters.json',
+  'elasticache_replication_groups.json',
+  'elasticache_subnet_groups.json',
+  'elasticache_parameter_groups.json',
+  'elasticache_parameter_details.json',
+  'elasticache_security_groups.json',
+  'elasticache_snapshots.json'
 )
 
 # リソースIDの抽出ロジック
@@ -100,6 +117,23 @@ $idSelectors = @{
   'iam_saml_provider_details.json'                    = @{ Path=''; Id='Arn' }
   'iam_oidc_providers.json'                           = @{ Path='OpenIDConnectProviderList'; Id='Arn' }
   'iam_oidc_provider_details.json'                    = @{ Path=''; Id='Arn' }
+  'rds_db_instances.json'                             = @{ Path='DBInstances'; Id='DBInstanceIdentifier' }
+  'rds_db_clusters.json'                              = @{ Path='DBClusters'; Id='DBClusterIdentifier' }
+  'rds_db_subnet_groups.json'                         = @{ Path='DBSubnetGroups'; Id='DBSubnetGroupName' }
+  'rds_db_parameter_groups.json'                      = @{ Path='DBParameterGroups'; Id='DBParameterGroupName' }
+  'rds_db_parameter_details.json'                     = @{ Path=''; Id='DBParameterGroupName' }
+  'rds_db_cluster_parameter_groups.json'              = @{ Path='DBClusterParameterGroups'; Id='DBClusterParameterGroupName' }
+  'rds_db_cluster_parameter_details.json'             = @{ Path=''; Id='DBClusterParameterGroupName' }
+  'rds_option_groups.json'                            = @{ Path='OptionGroupsList'; Id='OptionGroupName' }
+  'rds_db_snapshots.json'                             = @{ Path='DBSnapshots'; Id='DBSnapshotIdentifier' }
+  'rds_db_cluster_snapshots.json'                     = @{ Path='DBClusterSnapshots'; Id='DBClusterSnapshotIdentifier' }
+  'elasticache_clusters.json'                         = @{ Path='CacheClusters'; Id='CacheClusterId' }
+  'elasticache_replication_groups.json'               = @{ Path='ReplicationGroups'; Id='ReplicationGroupId' }
+  'elasticache_subnet_groups.json'                    = @{ Path='CacheSubnetGroups'; Id='CacheSubnetGroupName' }
+  'elasticache_parameter_groups.json'                 = @{ Path='CacheParameterGroups'; Id='CacheParameterGroupName' }
+  'elasticache_parameter_details.json'                = @{ Path=''; Id='CacheParameterGroupName' }
+  'elasticache_security_groups.json'                  = @{ Path='CacheSecurityGroups'; Id='CacheSecurityGroupName' }
+  'elasticache_snapshots.json'                        = @{ Path='Snapshots'; Id='SnapshotName' }
 }
 
 # ---------- ユーティリティ ----------
@@ -419,6 +453,36 @@ function Load-Items {
     foreach ($rolePolicy in (As-Array $items)) {
       $key = "$($rolePolicy.RoleName)|$($rolePolicy.Type)"
       $map[$key] = $rolePolicy
+    }
+    return $map
+  }
+  
+  # RDS Parameter Details の特殊処理
+  if ($path.ToLower().EndsWith('rds_db_parameter_details.json')) {
+    $map = @{}
+    foreach ($paramGroup in (As-Array $items)) {
+      $id = $paramGroup.DBParameterGroupName
+      if ($id) { $map[$id] = $paramGroup }
+    }
+    return $map
+  }
+  
+  # RDS Cluster Parameter Details の特殊処理
+  if ($path.ToLower().EndsWith('rds_db_cluster_parameter_details.json')) {
+    $map = @{}
+    foreach ($paramGroup in (As-Array $items)) {
+      $id = $paramGroup.DBClusterParameterGroupName
+      if ($id) { $map[$id] = $paramGroup }
+    }
+    return $map
+  }
+  
+  # ElastiCache Parameter Details の特殊処理
+  if ($path.ToLower().EndsWith('elasticache_parameter_details.json')) {
+    $map = @{}
+    foreach ($paramGroup in (As-Array $items)) {
+      $id = $paramGroup.CacheParameterGroupName
+      if ($id) { $map[$id] = $paramGroup }
     }
     return $map
   }
